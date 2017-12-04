@@ -1,3 +1,6 @@
+= 2017 Dec 03 / Version 1.6.1 =
+* Fixed: namespace wasn't updated in global console() function.
+
 = 2017 Dec 03 / Version 1.6 =
 * Added: json_prepare() to recursively prepare JSON w/object names intact and account for back references, replaces print_r().
 * Added: error_level variable, passed to set_error_handler() $types parameter.

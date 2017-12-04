@@ -13,7 +13,7 @@ namespace BurningMoth\ChromeLogger {
 	 * @var string|float
 	 * @since 1.0
 	 */
-	const VERSION = '1.6';
+	const VERSION = '1.6.1';
 
 
 	/**
@@ -952,7 +952,7 @@ namespace {
 	if ( BurningMoth\ChromeLogger\variable('use_console') ) {
 
 		function console( $message, $type = 'console', $file = null, $line = null ) {
-			BurningMoth\ChromeLogger\report($message, BMC\ChromeLogger\backtrace($file, $line, 1), $type);
+			BurningMoth\ChromeLogger\report($message, BurningMoth\ChromeLogger\backtrace($file, $line, 1), $type);
 		}
 
 	}
