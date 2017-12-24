@@ -579,10 +579,13 @@ namespace BurningMoth\ChromeLogger {
 			&& ( $log = array_filter($log, function($msg){ return $msg['deferred']; }) )
 		) {
 
-			print '<script type="text/javascript">/* <![CDATA[ */ if ( console ) { ';
+			print '<script type="text/javascript">/* <![CDATA[ */ ';
 
-			// callstack ? include callback function for it ...
-			if ( namespace\variable('callstack') ) print 'console.callstack = function( label, msg ) { this.log( label, msg ); }; ';
+			// load namespaced functions ...
+			$ns = '_' . md5( time() );
+			print '(function( ns ){ window[ ns ] = ';
+			include __DIR__ . '/chromelogger.js';
+			printf(' })("%s"); ', $ns);
 
 			while ( $log ) {
 
@@ -597,30 +600,43 @@ namespace BurningMoth\ChromeLogger {
 				if ( $num > 1 ) $label .= '[' . $num . ']';
 				$label .= ':';
 
-				// reverse backtrace ...
-				$trace = array_reverse($trace);
-
-				// print console ...
+				// output to web console ...
 				printf(
-					'console.groupCollapsed(%s, %s); ',
-					json_encode($label),
-					json_encode($message)
+					'console.%s(%s, %s.cleanObjectProperties(%s)); ',
+					$type,
+					json_encode( $label ),
+					$ns,
+					json_encode( $message )
 				);
 
-				while ( $trace ) {
+				// process trace ...
+				if ( $trace ) {
 
+					// reverse backtrace ...
+					$trace = array_reverse($trace);
+
+					// print console ...
 					printf(
-						'console.log(%s); ',
-						json_encode( '« ' . array_shift($trace) )
+						'console.groupCollapsed(%s); ',
+						json_encode( 'Trace: ' . array_shift($trace) )
 					);
+
+					while ( $trace ) {
+
+						printf(
+							'console.log(%s); ',
+							json_encode( '« ' . array_shift($trace) )
+						);
+
+					}
+
+					print 'console.groupEnd(); ';
 
 				}
 
-				print 'console.groupEnd(); ';
-
 			}
 
-			print('} /* ]]> */</script>');
+			print('/* ]]> */</script>');
 
 		}
 

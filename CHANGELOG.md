@@ -1,3 +1,8 @@
+= 2017 Dec 23 / Version 1.7 =
+* Added: chromelogger.js to be included with random namespace when report_deferred() is invoked.
+* Added: Removal of __proto__ and length properties from objects and arrays for deferred messages.
+* Removed: Check for console object before processing deferred messages. Should be consistently using supporting browsers by now.
+
 = 2017 Dec 03 / Version 1.6.1 =
 * Fixed: namespace wasn't updated in global console() function.
 
