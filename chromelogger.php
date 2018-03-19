@@ -13,7 +13,7 @@ namespace BurningMoth\ChromeLogger {
 	 * @var string|float
 	 * @since 1.0
 	 */
-	const VERSION = '1.6.1';
+	const VERSION = '2.0';
 
 
 	/**
@@ -347,7 +347,7 @@ namespace BurningMoth\ChromeLogger {
 
 				$log[ $log_key ] = array(
 					'message'	=> 'Chrome Logger has exceded the memory usage limit and has ceased logging additional messages.',
-					'trace'		=> array( namespace\shortfile(__FILE__) . ':' . __LINE__ ),
+					'trace'		=> array(),
 					'type'		=> 'warn',
 					'label'		=> 'Warning:',
 					'num'		=> 1,
@@ -361,7 +361,10 @@ namespace BurningMoth\ChromeLogger {
 		}
 
 		// message key ...
-		if (!( $log_key = end($trace) )) $log_key = strval(count($log));
+		$log_key = serialize($message);
+		if ( $trace ) $log_key .= '@' . end($trace)->trace;
+		else $log_key .= '#' . strval(count($log));
+		$log_key = md5($log_key);
 
 		// increment, don't repeat log messages ...
 		if ( array_key_exists($log_key, $log) ) {
@@ -471,52 +474,44 @@ namespace BurningMoth\ChromeLogger {
 					// reverse the trace so the problem entry is at the beginning ...
 					$trace = array_reverse($trace);
 
-					// get the first trace element and file:line ...
-					$row = reset($trace);
-					$file_line = '/:0';
-					/*
-					if ( preg_match('#([^/ ]*:\d*)$#', $row, $match) ) {
-						$file_line = '/' . end($match) . ':0';
-					}
-					*/
-
-					// report the error message ...
-					$json['rows'][] = array(
+					// construct main message ...
+					$row = array(
 						array(
 							$label . ( $num > 1 ? '['.$num.']' : '' ) . ':',
 							$message
-						),
-						$file_line,
-						$type
+						)
 					);
+					if ( $type != 'log' ) array_push($row, null, $type);
 
-					// start group with first trace entry ...
-					$json['rows'][] = array(
-						array( 'Trace: ' . $row ),
-						$file_line,
-						'groupCollapsed'
-					);
+					// report the error message ...
+					$json['rows'][] = $row;
 
-					// file subsequent trace entries in the group ...
-					while( $row = next($trace) ) {
+					// process stack trace ...
+					if ( $entry = reset($trace) ) {
 
-						//$file_line = '/:0';
-						/*
-						if ( preg_match('#([^/ ]*:\d*)$#', $row, $match) ) {
-							$file_line = '/' . end($match) . ':0';
-						}
-						*/
-
+						// start group with first trace entry ...
 						$json['rows'][] = array(
-							array( '« ' . $row ),
-							//$file_line,
-							//$type
+							array( 'Trace:', $entry->message ),
+							'@ ' . $entry->trace,
+							'groupCollapsed'
 						);
 
-					}
+						// file subsequent trace entries in the group ...
+						while( $entry = next($trace) ) {
 
-					// end the group ...
-					$json['rows'][] = array(array(), null, 'groupEnd');
+							$row = array(
+								array( '«', $entry->message ),
+							);
+							if ( $entry->trace ) $row[] = '@ ' . $entry->trace;
+
+							$json['rows'][] = $row;
+
+						}
+
+						// end the group ...
+						$json['rows'][] = array(array(), null, 'groupEnd');
+
+					}
 
 					// set the header if header size is within stated limits ...
 					if (
@@ -563,7 +558,16 @@ namespace BurningMoth\ChromeLogger {
 		/**
 		 * Report any last error ...
 		 */
-		if ( $error = error_get_last() ) namespace\report($error['message'], namespace\backtrace($error['file'], $error['line'], 2), $error['type']);
+		if ( $error = error_get_last() ) {
+			namespace\report(
+				strip_tags($error['message']),
+				array( (object) array(
+					'message' => '',
+					'trace' => namespace\shortfile($error['file']) . ':' . $error['line']
+				) ),
+				$error['type']
+			);
+		}
 
 		/**
 		 * Headers are sent and not the ajax script so print to document body ...
@@ -609,23 +613,31 @@ namespace BurningMoth\ChromeLogger {
 					json_encode( $message )
 				);
 
-				// process trace ...
-				if ( $trace ) {
+				// read stack trace in reverse ...
+				if ( $entry = end($trace) ) {
 
-					// reverse backtrace ...
-					$trace = array_reverse($trace);
+					// compose row ...
+					$row = array(
+						'Trace:',
+						$entry->message
+					);
+					if ( $entry->trace ) $row[] = $entry->trace;
 
 					// print console ...
 					printf(
 						'console.groupCollapsed(%s); ',
-						json_encode( 'Trace: ' . array_shift($trace) )
+						trim(json_encode($row),'[]')
 					);
 
-					while ( $trace ) {
+					// loop through remaining stack trace ...
+					while ( $entry = prev($trace) ) {
+
+						$row = array( '«', $entry->message );
+						if ( $entry->trace ) array_push($row, '@', $entry->trace);
 
 						printf(
 							'console.log(%s); ',
-							json_encode( '« ' . array_shift($trace) )
+							trim(json_encode($row),'[]')
 						);
 
 					}
@@ -633,6 +645,8 @@ namespace BurningMoth\ChromeLogger {
 					print 'console.groupEnd(); ';
 
 				}
+
+
 
 			}
 
@@ -717,8 +731,18 @@ namespace BurningMoth\ChromeLogger {
 		// level off this and any other reporting functions from the stack ...
 		$trace = array_slice($trace, $n);
 
-		// add file:line entry where error occurred ...
-		if ( $file && $line ) array_unshift($trace, compact('file', 'line'));
+		// add file:line entry where error occurred if not already represented in stack trace ...
+		if (
+			$file && $line
+			&& (
+				(
+					( $entry = current($trace) )
+					&& ( $entry['file'] != $file )
+					&& ( $entry['line'] != $line )
+				)
+				|| !$entry
+			)
+		) array_unshift($trace, compact('file', 'line'));
 
 		// limit stack trace ...
 		if ( $limit = namespace\variable('stack_limit') ) $trace = array_slice($trace, 0, $limit);
@@ -737,39 +761,45 @@ namespace BurningMoth\ChromeLogger {
 	/**
 	 * array_map() callback to flatten results from debug_backtrace() through.
 	 * @since 1.0
+	 * @since 2.0
+	 *	- return value is object instead of string
+	 * @return object
 	 */
 	function array_map_flatten_backtrace( $trace ) {
 
-		$value = '';
+		$entry = (object) [
+			'message' => '',
+			'trace' => null,
+		];
 
 		// included path ...
 		if (
 			isset($trace['function'])
 			&& in_array($trace['function'], array('require', 'require_once', 'include', 'include_once'))
-		) $value .= namespace\shortfile( isset($trace['args']) ? current($trace['args']) : $trace['file'] );
+		) $entry->message = namespace\shortfile( isset($trace['args']) ? current($trace['args']) : $trace['file'] );
 
 		// functions, classes, etc.
 		else {
 
 			// prefix with class name ...
 			if ( isset($trace['class']) ) {
-				$value .= namespace\unnamespace($trace['class']) . $trace['type'];
+				$entry->message .= namespace\unnamespace($trace['class']) . $trace['type'];
 			}
 
 			// add function name, arguments ...
 			if ( isset($trace['function']) ) {
-				$value .= namespace\unnamespace($trace['function']) . '(' . implode(', ', array_map(__NAMESPACE__.'\array_map_flatten_backtrace_args', $trace['args'])) . ')';
+				$entry->message .= namespace\unnamespace($trace['function']) . '(' . implode(', ', array_map(__NAMESPACE__.'\array_map_flatten_backtrace_args', $trace['args'])) . ')';
 			}
 
 		}
 
-		// append file:line ...
+		// set file:line ...
 		if ( isset($trace['file']) ) {
-			$value .= ' @ ' .  namespace\shortfile($trace['file']) . ':' . $trace['line'];
+			$entry->trace = namespace\shortfile($trace['file']) . ':' . $trace['line'];
 		}
 
 		// return value ...
-		return trim($value);
+		return $entry;
 
 	}
 
@@ -925,8 +955,7 @@ namespace BurningMoth\ChromeLogger {
 			}
 
 			// enumerate properties ...
-			$properties = (array) $var;
-			while ( list($key, $value) = each($properties) ) $properties[ $key ] = namespace\json_prepare($value);
+			$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);
 
 			// return a descriptive object array for json ...
 			return [ $classname => $properties ];
@@ -935,7 +964,7 @@ namespace BurningMoth\ChromeLogger {
 
 		// process arrays ...
 		elseif ( is_array( $var ) ) {
-			while ( list($key, $value) = each($var) ) $var[ $key ] = namespace\json_prepare($value);
+			$var = array_map(__NAMESPACE__.'\json_prepare', $var);
 		}
 
 		// pass through everything else ...

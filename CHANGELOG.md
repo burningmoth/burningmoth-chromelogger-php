@@ -1,3 +1,10 @@
+= 2018 Mar 18 / Version 2.0
+* Updated: backtrace() now returns flattened array of entry objects instead of message strings.
+* Updated: report() and report_deferred(), moved file:line from messages back to chromelogger protocol trace index.
+
+= 2018 Jan 19 / Version 1.7.1 =
+* Updated: Replaced PHP 7.2 deprecated while(each()) with foreach() loops.
+
 = 2017 Dec 23 / Version 1.7 =
 * Added: chromelogger.js to be included with random namespace when report_deferred() is invoked.
 * Added: Removal of __proto__ and length properties from objects and arrays for deferred messages.
