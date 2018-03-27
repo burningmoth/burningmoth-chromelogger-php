@@ -3,7 +3,7 @@
  * Sets handlers to post PHP errors / exceptions to browser web console via X-ChromeLogger-Data protocol.
  * @package Burning Moth \ ChromeLogger
  * @author Tarraccas Obremski <tarraccas@burningmoth.com>
- * @copyright Burning Moth Creations Inc. 2016-2017
+ * @copyright Burning Moth Creations Inc. 2016-2018
  */
 
 ## LIBRARY NAMESPACE ##
@@ -13,7 +13,7 @@ namespace BurningMoth\ChromeLogger {
 	 * @var string|float
 	 * @since 1.0
 	 */
-	const VERSION = '2.0';
+	const VERSION = '2.1';
 
 
 	/**
@@ -113,16 +113,6 @@ namespace BurningMoth\ChromeLogger {
 				 * @var int Number of bytes ( default 50% of php memory limit )
 				 */
 				'max_memory_usage'	=> namespace\memory_limit()/2,
-
-
-				/**
-				 * Distinction for webkit browsers ...
-				 * @since 1.2
-				 * @deprecated 1.5
-				 * @remove 2.0
-				 * @var bool
-				 */
-				'is_webkit'			=> preg_match('/webkit/i', $_SERVER['HTTP_USER_AGENT']),
 
 
 				/**
@@ -282,10 +272,10 @@ namespace BurningMoth\ChromeLogger {
 		$log =& namespace\log();
 		if ( array_key_exists('callstack', $log) ) $log['callstack']['message'] = $stack;
 		else {
-			$log[ 'callmap' ] = array(
+			$log[ 'callstack' ] = array(
 				'message' => $stack,
 				'trace' => array(),
-				'type' => 'callstack',
+				'type' => 'log',
 				'label' => 'Call Stack',
 				'num' => 1,
 				'deferred' => true
@@ -346,7 +336,7 @@ namespace BurningMoth\ChromeLogger {
 			if ( !array_key_exists($log_key, $log) ) {
 
 				$log[ $log_key ] = array(
-					'message'	=> 'Chrome Logger has exceded the memory usage limit and has ceased logging additional messages.',
+					'message'	=> 'Chrome Logger has exceeded the memory usage limit and has ceased logging additional messages.',
 					'trace'		=> array(),
 					'type'		=> 'warn',
 					'label'		=> 'Warning:',
@@ -399,15 +389,15 @@ namespace BurningMoth\ChromeLogger {
 			switch ($type) {
 				case 'i':
 				case 'info':
-				case 'console':
+				case 'notice':
+				case E_NOTICE:
 				case E_USER_NOTICE:
 					$type = 'info';
 					break;
 
 				case 'l':
 				case 'log':
-				case 'notice':
-				case E_NOTICE:
+				case 'console':
 					$type = 'log';
 					break;
 
@@ -476,11 +466,9 @@ namespace BurningMoth\ChromeLogger {
 
 					// construct main message ...
 					$row = array(
-						array(
-							$label . ( $num > 1 ? '['.$num.']' : '' ) . ':',
-							$message
-						)
+						array( $message )
 					);
+					if ( $num > 1 ) array_unshift($row[0], $num);
 					if ( $type != 'log' ) array_push($row, null, $type);
 
 					// report the error message ...
@@ -491,8 +479,8 @@ namespace BurningMoth\ChromeLogger {
 
 						// start group with first trace entry ...
 						$json['rows'][] = array(
-							array( 'Trace:', $entry->message ),
-							'@ ' . $entry->trace,
+							array( $entry->message ),
+							$entry->trace,
 							'groupCollapsed'
 						);
 
@@ -500,9 +488,9 @@ namespace BurningMoth\ChromeLogger {
 						while( $entry = next($trace) ) {
 
 							$row = array(
-								array( '«', $entry->message ),
+								array( '« ' . $entry->message ),
 							);
-							if ( $entry->trace ) $row[] = '@ ' . $entry->trace;
+							if ( $entry->trace ) $row[] = $entry->trace;
 
 							$json['rows'][] = $row;
 
@@ -583,13 +571,16 @@ namespace BurningMoth\ChromeLogger {
 			&& ( $log = array_filter($log, function($msg){ return $msg['deferred']; }) )
 		) {
 
-			print '<script type="text/javascript">/* <![CDATA[ */ ';
+			// rows variable ...
+			$var = 'ChromeLogger_' . md5( time() ) . '_rows';
 
-			// load namespaced functions ...
-			$ns = '_' . md5( time() );
-			print '(function( ns ){ window[ ns ] = ';
-			include __DIR__ . '/chromelogger.js';
-			printf(' })("%s"); ', $ns);
+			// open script ...
+			printf(
+				'<script data-chromelogger-rows="%s" type="text/javascript">/* <![CDATA[ */ ',
+				$var
+			);
+
+			$rows = array();
 
 			while ( $log ) {
 
@@ -597,60 +588,52 @@ namespace BurningMoth\ChromeLogger {
 				$msg = array_shift($log);
 				extract($msg);
 
-				// ensure type ...
-				if ( empty($type) ) $type = 'log';
-
-				// process label ...
-				if ( $num > 1 ) $label .= '[' . $num . ']';
-				$label .= ':';
-
-				// output to web console ...
-				printf(
-					'console.%s(%s, %s.cleanObjectProperties(%s)); ',
-					$type,
-					json_encode( $label ),
-					$ns,
-					json_encode( $message )
+				// construct main message ...
+				$row = array(
+					array( $message )
 				);
+				if ( $num > 1 ) array_unshift($row[0], $num);
+				if ( $type != 'log' ) array_push($row, null, $type);
+				$rows[] = $row;
 
 				// read stack trace in reverse ...
 				if ( $entry = end($trace) ) {
 
-					// compose row ...
-					$row = array(
-						'Trace:',
-						$entry->message
-					);
-					if ( $entry->trace ) $row[] = $entry->trace;
-
-					// print console ...
-					printf(
-						'console.groupCollapsed(%s); ',
-						trim(json_encode($row),'[]')
+					// start grouped stack trace w/first entry ...
+					$rows[] = array(
+						$entry->message,
+						$entry->trace,
+						'groupCollapsed'
 					);
 
 					// loop through remaining stack trace ...
 					while ( $entry = prev($trace) ) {
 
-						$row = array( '«', $entry->message );
-						if ( $entry->trace ) array_push($row, '@', $entry->trace);
-
-						printf(
-							'console.log(%s); ',
-							trim(json_encode($row),'[]')
-						);
+						// log entry ...
+						$row = array( '« ' . $entry->message );
+						if ( $entry->trace ) $row[] = $entry->trace;
+						$rows[] = $row;
 
 					}
 
-					print 'console.groupEnd(); ';
+					// close grouped stack trace ...
+					$rows[] = array(
+						array(),
+						null,
+						'groupEnd'
+					);
 
 				}
 
 
-
 			}
 
-			print('/* ]]> */</script>');
+			// close script ...
+			printf(
+				'%s = %s; /* ]]> */</script>',
+				$var,
+				json_encode($rows)
+			);
 
 		}
 
@@ -928,7 +911,7 @@ namespace BurningMoth\ChromeLogger {
 	 */
 	function json_prepare( $var ) {
 
-		// references ...
+		// object references ...
 		static $refs;
 		if ( !isset($refs) ) $refs = [];
 
@@ -938,27 +921,31 @@ namespace BurningMoth\ChromeLogger {
 			// get classname ...
 			$classname = namespace\unnamespace( get_class( $var ) );
 
+			// enumerate properties ...
+			$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);
+
 			// get reference ...
 			ob_start();
 			debug_zval_dump($var);
 			if ( preg_match('/#\d+/', ob_get_clean(), $matches) ) {
 
-				// ammend classname to create reference ...
-				$classname .= current($matches);
+				// determine class id ...
+				$id = current($matches);
 
 				// object already referenced ? return reference name ...
-				if ( in_array($classname, $refs) ) return $classname;
+				if ( in_array($classname.$id, $refs) ) return $classname;
 
 				// add to references ...
-				else $refs[] = $classname;
+				else $refs[] = $classname.$id;
 
 			}
+			else $id = '#';
 
-			// enumerate properties ...
-			$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);
+			// add #id = classname to properties (should sort to the top in web console)
+			$properties[$id] = $classname;
 
 			// return a descriptive object array for json ...
-			return [ $classname => $properties ];
+			return $properties;
 
 		}
 

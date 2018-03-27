@@ -1,4 +1,11 @@
-= 2018 Mar 18 / Version 2.0
+= 2018 Mar 26 / Version 2.1 =
+* Updated: console() now logs as 'log' instead of 'info'.
+* Updated: json_prepare() adds object classname to enumerated properties rather than nesting it in a parent object.
+* Updated: report_deferred() now outputs rows scripting specifically formatted to be parsed by the Firefox ChromeLogger extension.
+* Regression: `__proto__` and `length` object and array properties no longer removed. Problematic.
+* Removed: `is_webkit` variable.
+
+= 2018 Mar 18 / Version 2.0 =
 * Updated: backtrace() now returns flattened array of entry objects instead of message strings.
 * Updated: report() and report_deferred(), moved file:line from messages back to chromelogger protocol trace index.
 
