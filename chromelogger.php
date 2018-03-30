@@ -931,12 +931,15 @@ namespace BurningMoth\ChromeLogger {
 
 				// determine class id ...
 				$id = current($matches);
+				
+				// reference id ...
+				$ref = $classname.$id;
 
 				// object already referenced ? return reference name ...
-				if ( in_array($classname.$id, $refs) ) return $classname;
+				if ( in_array($ref, $refs) ) return $ref;
 
 				// add to references ...
-				else $refs[] = $classname.$id;
+				else $refs[] = $ref;
 
 			}
 			else $id = '#';

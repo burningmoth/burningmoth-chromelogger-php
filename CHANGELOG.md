@@ -1,3 +1,6 @@
+= 2018 Mar 30 / Version 2.1.1 =
+* Fixed: Object reference id returned by json_prepare() was lacking object #number.
+
 = 2018 Mar 26 / Version 2.1 =
 * Updated: console() now logs as 'log' instead of 'info'.
 * Updated: json_prepare() adds object classname to enumerated properties rather than nesting it in a parent object.
