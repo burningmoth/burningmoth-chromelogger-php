@@ -13,7 +13,7 @@ namespace BurningMoth\ChromeLogger {
 	 * @var string|float
 	 * @since 1.0
 	 */
-	const VERSION = '2.1';
+	const VERSION = '2.1.2';
 
 
 	/**
@@ -771,7 +771,8 @@ namespace BurningMoth\ChromeLogger {
 
 			// add function name, arguments ...
 			if ( isset($trace['function']) ) {
-				$entry->message .= namespace\unnamespace($trace['function']) . '(' . implode(', ', array_map(__NAMESPACE__.'\array_map_flatten_backtrace_args', $trace['args'])) . ')';
+				if ( empty($trace['args']) ) $trace['args'] = array();
+				$entry->message .= namespace\unnamespace($trace['function']) . '(' . implode( ', ', array_map(__NAMESPACE__.'\array_map_flatten_backtrace_args', $trace['args']) ) . ')';
 			}
 
 		}

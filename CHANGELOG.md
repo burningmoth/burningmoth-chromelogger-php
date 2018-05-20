@@ -1,3 +1,6 @@
+= 2018 May 20 / Version 2.1.2 =
+* Fixed: array_map_flatten_backtrace() didn't always supply trace 'args' value along with 'function'.
+
 = 2018 Mar 30 / Version 2.1.1 =
 * Fixed: Object reference id returned by json_prepare() was lacking object #number.
 
