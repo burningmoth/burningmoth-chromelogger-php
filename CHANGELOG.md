@@ -1,3 +1,9 @@
+# CHANGELOG
+
+= 2018 Aug 03 / Version 2.2 =
+* Updated: json_prepare() now adds object class name to `___class_name` property.
+* Updated: report_deferred() outputs <script[data-chromelogger-data]> instead of <script[data-chromelogger-rows]> nodes.
+
 = 2018 May 20 / Version 2.1.2 =
 * Fixed: array_map_flatten_backtrace() didn't always supply trace 'args' value along with 'function'.
 

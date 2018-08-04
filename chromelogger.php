@@ -13,7 +13,7 @@ namespace BurningMoth\ChromeLogger {
 	 * @var string|float
 	 * @since 1.0
 	 */
-	const VERSION = '2.1.2';
+	const VERSION = '2.2';
 
 
 	/**
@@ -538,6 +538,8 @@ namespace BurningMoth\ChromeLogger {
 	 * @since 1.2
 	 * @since 1.4
 	 *	- report last error ...
+	 * @since 2.2
+	 *	- output <script> that gets read by ChromeLogger Firefox extension
 	 */
 	function report_deferred() {
 
@@ -570,15 +572,6 @@ namespace BurningMoth\ChromeLogger {
 			// has deferred log messages to post ...
 			&& ( $log = array_filter($log, function($msg){ return $msg['deferred']; }) )
 		) {
-
-			// rows variable ...
-			$var = 'ChromeLogger_' . md5( time() ) . '_rows';
-
-			// open script ...
-			printf(
-				'<script data-chromelogger-rows="%s" type="text/javascript">/* <![CDATA[ */ ',
-				$var
-			);
 
 			$rows = array();
 
@@ -626,15 +619,21 @@ namespace BurningMoth\ChromeLogger {
 				}
 
 
-			}
-
-			// close script ...
+			}					
+			
+			$var = 'ChromeLoggerData_' . md5( time() );
+						
 			printf(
-				'%s = %s; /* ]]> */</script>',
+				'<script type="text/javascript" data-chromelogger-data="%s">/* <![CDATA[ */ %s = %s; /* ]]> */</script>',
 				$var,
-				json_encode($rows)
+				$var,
+				json_encode([
+					'version' => namespace\VERSION,
+					'columns' => array('log', 'backtrace', 'type'),
+					'rows' => $rows
+				])
 			);
-
+			
 		}
 
 	}
@@ -946,7 +945,7 @@ namespace BurningMoth\ChromeLogger {
 			else $id = '#';
 
 			// add #id = classname to properties (should sort to the top in web console)
-			$properties[$id] = $classname;
+			$properties[$id] = $properties['___class_name'] = $classname;
 
 			// return a descriptive object array for json ...
 			return $properties;
