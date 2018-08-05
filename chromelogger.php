@@ -351,7 +351,7 @@ namespace BurningMoth\ChromeLogger {
 		}
 
 		// message key ...
-		$log_key = serialize($message);
+		$log_key = print_r($message, true);
 		if ( $trace ) $log_key .= '@' . end($trace)->trace;
 		else $log_key .= '#' . strval(count($log));
 		$log_key = md5($log_key);
@@ -621,17 +621,14 @@ namespace BurningMoth\ChromeLogger {
 
 			}					
 			
-			$var = 'ChromeLoggerData_' . md5( time() );
+			$var = 'ChromeLoggerRows_' . md5( time() );
 						
 			printf(
-				'<script type="text/javascript" data-chromelogger-data="%s">/* <![CDATA[ */ %s = %s; /* ]]> */</script>',
+				'<script type="text/javascript" data-chromelogger-version="%s" data-chromelogger-columns="log,backtrace,type" data-chromelogger-rows="%s">/* <![CDATA[ */ %s = %s; /* ]]> */</script>',
+				namespace\VERSION,
 				$var,
 				$var,
-				json_encode([
-					'version' => namespace\VERSION,
-					'columns' => array('log', 'backtrace', 'type'),
-					'rows' => $rows
-				])
+				json_encode($rows)
 			);
 			
 		}
@@ -917,12 +914,9 @@ namespace BurningMoth\ChromeLogger {
 
 		// process objects ...
 		if ( is_object( $var ) ) {
-
+		
 			// get classname ...
 			$classname = namespace\unnamespace( get_class( $var ) );
-
-			// enumerate properties ...
-			$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);
 
 			// get reference ...
 			ob_start();
@@ -943,7 +937,13 @@ namespace BurningMoth\ChromeLogger {
 
 			}
 			else $id = '#';
+			
+			// callable Closure ? return indicator now or it will loop FOREVER !!!
+			if ( $var instanceof \Closure ) return $classname.$id;
 
+			// enumerate properties ...
+			$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);			
+			
 			// add #id = classname to properties (should sort to the top in web console)
 			$properties[$id] = $properties['___class_name'] = $classname;
 
