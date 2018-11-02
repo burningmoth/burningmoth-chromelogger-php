@@ -1,5 +1,9 @@
 # CHANGELOG
 
+= 2018 Nov 01 / Version 2.3 =
+* Updated: console() and report() functions now support 'group', 'groupCollapsed', 'groupEnd', 'assert' and 'table' $type; $message that is an array of arrays or objects automatically displays as 'table' type.
+* Moved: root console() declaration moved to console.php w/function_exists() pre-check and loaded on init().
+
 = 2018 Aug 03 / Version 2.2 =
 * Updated: json_prepare() now adds object class name to `___class_name` property.
 * Fixed: Closure callable objects failed to serialize for log keys, threw json_prepare() into infinite loop.
