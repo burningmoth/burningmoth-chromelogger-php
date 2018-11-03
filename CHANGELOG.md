@@ -1,5 +1,8 @@
 # CHANGELOG
 
+= 2018 Nov 03 / Version 2.3.1 =
+* Fixed: removed auto-table-typing, it's annoying.
+
 = 2018 Nov 01 / Version 2.3 =
 * Updated: console() and report() functions now support 'group', 'groupCollapsed', 'groupEnd', 'assert' and 'table' $type; $message that is an array of arrays or objects automatically displays as 'table' type.
 * Moved: root console() declaration moved to console.php w/function_exists() pre-check and loaded on init().

@@ -11,7 +11,7 @@ namespace BurningMoth\ChromeLogger;
  * @var string|float
  * @since 1.0
  */
-const VERSION = '2.3';
+const VERSION = '2.3.1';
 
 
 /**
@@ -58,7 +58,7 @@ function init( $variables = array() ) {
 		register_tick_function(__NAMESPACE__.'\tick');
 
 	}
-	
+
 	/**
 	 * Declare console() function.
 	 * @since 2.3
@@ -361,8 +361,8 @@ function report( $message, $trace = array(), $type = 'info' ) {
 	$log_key = md5($log_key);
 
 	// increment, don't repeat log messages, unless it's a group type ...
-	if ( 
-		array_key_exists($log_key, $log) 
+	if (
+		array_key_exists($log_key, $log)
 		&& !(
 			is_string($type)
 			&& strpos($type, 'group') !== 0
@@ -398,37 +398,37 @@ function report( $message, $trace = array(), $type = 'info' ) {
 
 		// determine proper type ...
 		switch ( $type ) {
-			
+
 			case 'g':
 			case 'group':
 				$type = 'group';
 				$trace = array();
 				break;
-				
+
 			case 'c':
 			case 'collapsed':
 			case 'groupCollapsed':
 				$type = 'groupCollapsed';
 				$trace = array();
 				break;
-				
+
 			case 'e':
 			case 'end':
 			case 'groupEnd':
 				$type = 'groupEnd';
 				$trace = array();
 				break;
-			
+
 			case 'a':
 			case 'assert':
 				$type = 'assert';
 				break;
-			
+
 			case 't':
-			case 'table':			
+			case 'table':
 				$type = 'table';
 				break;
-							
+
 			case 'i':
 			case 'info':
 			case 'notice':
@@ -461,13 +461,6 @@ function report( $message, $trace = array(), $type = 'info' ) {
 				break;
 
 		}
-		
-		// message is array of arrays or objects ? format as table ...
-		if ( 
-			is_array($message)
-			&& ( $value = current($message) )
-			&& ( is_array($value) || is_object($value) )
-		) $type = 'table';
 
 		// no label ? set from type ...
 		if ( !$label ) $label = ucfirst($type);
@@ -482,7 +475,7 @@ function report( $message, $trace = array(), $type = 'info' ) {
 		$log_msg = compact('message', 'trace', 'type', 'label', 'num');
 
 		// whether or not to defer the message ...
-		static $defer = false;			
+		static $defer = false;
 
 		// not deferring ? process headers ...
 		if ( ! $defer ) {
@@ -665,10 +658,10 @@ function report_deferred() {
 			}
 
 
-		}					
-		
+		}
+
 		$var = 'ChromeLoggerRows_' . md5( time() );
-					
+
 		printf(
 			'<script type="text/javascript" data-chromelogger-version="%s" data-chromelogger-columns="log,backtrace,type" data-chromelogger-rows="%s">/* <![CDATA[ */ %s = %s; /* ]]> */</script>',
 			namespace\VERSION,
@@ -676,7 +669,7 @@ function report_deferred() {
 			$var,
 			json_encode($rows)
 		);
-		
+
 	}
 
 }
@@ -960,7 +953,7 @@ function json_prepare( $var ) {
 
 	// process objects ...
 	if ( is_object( $var ) ) {
-	
+
 		// get classname ...
 		$classname = namespace\unnamespace( get_class( $var ) );
 
@@ -971,7 +964,7 @@ function json_prepare( $var ) {
 
 			// determine class id ...
 			$id = current($matches);
-			
+
 			// reference id ...
 			$ref = $classname.$id;
 
@@ -983,13 +976,13 @@ function json_prepare( $var ) {
 
 		}
 		else $id = '#';
-		
+
 		// callable Closure ? return indicator now or it will loop FOREVER !!!
 		if ( $var instanceof \Closure ) return $classname.$id;
 
 		// enumerate properties ...
-		$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);			
-		
+		$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);
+
 		// add #id = classname to properties (should sort to the top in web console)
 		$properties[$id] = $properties['___class_name'] = $classname;
 
