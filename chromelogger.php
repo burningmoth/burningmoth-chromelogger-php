@@ -3,7 +3,7 @@
  * Sets handlers to post PHP errors / exceptions to browser web console via X-ChromeLogger-Data protocol.
  * @package Burning Moth \ ChromeLogger
  * @author Tarraccas Obremski <tarraccas@burningmoth.com>
- * @copyright Burning Moth Creations Inc. 2016-2018
+ * @copyright Burning Moth Creations Inc. 2016-2019
  */
 namespace BurningMoth\ChromeLogger;
 
@@ -11,7 +11,7 @@ namespace BurningMoth\ChromeLogger;
  * @var string|float
  * @since 1.0
  */
-const VERSION = '2.3.1';
+const VERSION = '2.3.2';
 
 
 /**
@@ -33,7 +33,7 @@ function init( $variables = array() ) {
 	 * @since 1.0
 	 */
 	ini_set('display_errors', 1);
-	namespace\variable('prev_error_level', error_reporting( E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING ));
+	namespace\variable('prev_error_level', error_reporting( E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_STRICT ));
 
 	/**
 	 * Register error and exception handlers that report errors to web console.
@@ -981,7 +981,7 @@ function json_prepare( $var ) {
 		if ( $var instanceof \Closure ) return $classname.$id;
 
 		// enumerate properties ...
-		$properties = array_map(__NAMESPACE__.'\json_prepare', (array) $var);
+		$properties = array_map(__FUNCTION__, (array) $var);
 
 		// add #id = classname to properties (should sort to the top in web console)
 		$properties[$id] = $properties['___class_name'] = $classname;
@@ -993,7 +993,7 @@ function json_prepare( $var ) {
 
 	// process arrays ...
 	elseif ( is_array( $var ) ) {
-		$var = array_map(__NAMESPACE__.'\json_prepare', $var);
+		$var = array_map(__FUNCTION__, $var);
 	}
 
 	// pass through everything else ...

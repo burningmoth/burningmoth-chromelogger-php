@@ -1,5 +1,8 @@
 # CHANGELOG
 
+= 2019 Jan 23 / Version 2.3.2 = 
+* Updated: No longer reporting on E_STRICT errors as very little data is passed on them, making the console messages useless for debugging.
+
 = 2018 Nov 03 / Version 2.3.1 =
 * Fixed: removed auto-table-typing, it's annoying.
 
