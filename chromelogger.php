@@ -11,7 +11,7 @@ namespace BurningMoth\ChromeLogger;
  * @var string|float
  * @since 1.0
  */
-const VERSION = '2.3.2';
+const VERSION = '2.4';
 
 
 /**
@@ -660,13 +660,9 @@ function report_deferred() {
 
 		}
 
-		$var = 'ChromeLoggerRows_' . md5( time() );
-
 		printf(
-			'<script type="text/javascript" data-chromelogger-version="%s" data-chromelogger-columns="log,backtrace,type" data-chromelogger-rows="%s">/* <![CDATA[ */ %s = %s; /* ]]> */</script>',
+			'<script id="chromelogger" type="application/json" data-chromelogger-version="%s" data-chromelogger-columns="log,backtrace,type">%s</script>',
 			namespace\VERSION,
-			$var,
-			$var,
 			json_encode($rows)
 		);
 

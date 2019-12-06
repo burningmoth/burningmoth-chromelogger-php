@@ -1,4 +1,7 @@
-# CHANGELOG
+# ChromeLogger CHANGELOG
+
+= 2019 Dec 05 / Version 2.4 =
+* Updated: report_deferred() now outputs `<script[type="application/json"]#chromelogger>` consistent with Firefox ChromeLogger 2.0 extension changes.
 
 = 2019 Jan 23 / Version 2.3.2 = 
 * Updated: No longer reporting on E_STRICT errors as very little data is passed on them, making the console messages useless for debugging.
