@@ -3,7 +3,11 @@
 = 2019 Dec 05 / Version 2.4 =
 * Updated: report_deferred() now outputs `<script[type="application/json"]#chromelogger>` consistent with Firefox ChromeLogger 2.0 extension changes.
 
-= 2019 Jan 23 / Version 2.3.2 = 
+= 2020 Sep 18 / Version 2.3.3 =
+* Fixed: when report() error $type = 0 the error was determined to be a 'group' type (the first encountered in the switch statement) because loose comparison (that switch uses) determines 0 == 'g' after converting 'g' to an integer (0).
+* Updated: report_deferred() <script> output conforms to Firefox ChromeLogger 2+ parser.
+
+= 2019 Jan 23 / Version 2.3.2 =
 * Updated: No longer reporting on E_STRICT errors as very little data is passed on them, making the console messages useless for debugging.
 
 = 2018 Nov 03 / Version 2.3.1 =
