@@ -1,5 +1,8 @@
 # ChromeLogger CHANGELOG
 
+= 2020 Sep 18 / Version 2.4.1 =
+* Fixed: when report() error $type = 0 the error was determined to be a 'group' type (the first encountered in the switch statement) because loose comparison (that switch uses) determines 0 == 'g' after converting 'g' to an integer (0).
+
 = 2019 Dec 05 / Version 2.4 =
 * Updated: report_deferred() now outputs `<script[type="application/json"]#chromelogger>` consistent with Firefox ChromeLogger 2.0 extension changes.
 

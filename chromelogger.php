@@ -3,7 +3,7 @@
  * Sets handlers to post PHP errors / exceptions to browser web console via X-ChromeLogger-Data protocol.
  * @package Burning Moth \ ChromeLogger
  * @author Tarraccas Obremski <tarraccas@burningmoth.com>
- * @copyright Burning Moth Creations Inc. 2016-2019
+ * @copyright Burning Moth Creations Inc. 2016-2020
  */
 namespace BurningMoth\ChromeLogger;
 
@@ -11,7 +11,7 @@ namespace BurningMoth\ChromeLogger;
  * @var string|float
  * @since 1.0
  */
-const VERSION = '2.4';
+const VERSION = '2.4.1';
 
 
 /**
@@ -399,6 +399,15 @@ function report( $message, $trace = array(), $type = 'info' ) {
 		// determine proper type ...
 		switch ( $type ) {
 
+			/**
+			 * Switch statements do loose comparison and so 0 will resolve to equal any non-numeric string value!
+			 * @since 2.4.1
+			 * @see https://stackoverflow.com/questions/6843030/why-does-php-consider-0-to-be-equal-to-a-string#6843075
+			 */
+			case 0:
+				$type = 'error';
+				break;
+
 			case 'g':
 			case 'group':
 				$type = 'group';
@@ -656,7 +665,6 @@ function report_deferred() {
 				);
 
 			}
-
 
 		}
 
