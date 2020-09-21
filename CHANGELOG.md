@@ -1,5 +1,8 @@
 # ChromeLogger CHANGELOG
 
+= 2020 Sep 21 / Version 2.4.2 =
+* Fixed: switch ( $type ) case 0 was catching all string $type values, now removed and $type passed to switch statement cast as string to solve.
+
 = 2020 Sep 18 / Version 2.4.1 =
 * Fixed: when report() error $type = 0 the error was determined to be a 'group' type (the first encountered in the switch statement) because loose comparison (that switch uses) determines 0 == 'g' after converting 'g' to an integer (0).
 
