@@ -1,5 +1,8 @@
 # ChromeLogger CHANGELOG
 
+= 2024 Aug 27 / Version 2.4.3 =
+* Fixed: error_handler() $context parameter was depreciated as of PHP 8.0, default parameter values added to prevent error.
+
 = 2020 Sep 21 / Version 2.4.2 =
 * Fixed: switch ( $type ) case 0 was catching all string $type values, now removed and $type passed to switch statement cast as string to solve.
 
