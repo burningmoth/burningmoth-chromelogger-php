@@ -458,6 +458,17 @@ function report( $message, $trace = array(), $type = 'info' ) {
 				$type = 'warn';
 				break;
 
+			case 'd':
+			case 'dir':
+				$type = 'dir';
+				break;
+
+			case 'x':
+			case 'xml':
+			case 'dirxml':
+				$type = 'dirxml';
+				break;
+
 			case 'e':
 			case 'error':
 			default:
