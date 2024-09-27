@@ -1,6 +1,9 @@
 # ChromeLogger CHANGELOG
 
-= 2024 Aug 27 / Version 2.5 =
+= 2024 Sep 27 / Version 2.7 =
+* Fixed: error_reporting() doesn't return 0 w/PHP 8+, ammended with error code bitmask to correct.
+
+= 2024 Sep 25 / Version 2.5 =
 * Added: 'dir' and 'dirxml' report() types.
 
 = 2024 Aug 27 / Version 2.4.3 =

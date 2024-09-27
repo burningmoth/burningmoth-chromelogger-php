@@ -11,7 +11,7 @@ namespace BurningMoth\ChromeLogger;
  * @var string|float
  * @since 1.0
  */
-const VERSION = '2.5';
+const VERSION = '2.5.1';
 
 
 /**
@@ -700,11 +700,13 @@ if ( !defined('E_USER_DEPRECATED') ) define('E_USER_DEPRECATED', 16384);
  * @since 1.0
  * @since 2.4.3
  * 	- added default values so PHP 8.0 doesn't shit the bed after removing the $context parameter
+ * @since 2.5.1
+ * 	- updated error_reporting() suppression check with bitmask now required by PHP 8.0
  */
 function error_handler( $code = 0, $message = '', $file = '', $line = 0, $context = null ) {
 
 	// error is being suppressed via @ operator, do not continue with normal error handling ...
-	if ( error_reporting() === 0 ) return;
+	if ( ( error_reporting() & $code ) === 0 ) return;
 
 	// report error to web console ...
 	namespace\report( strip_tags($message), namespace\backtrace($file, $line, 2), $code );
