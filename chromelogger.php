@@ -3,7 +3,7 @@
  * Sets handlers to post PHP errors / exceptions to browser web console via X-ChromeLogger-Data protocol.
  * @package Burning Moth \ ChromeLogger
  * @author Tarraccas Obremski <tarraccas@burningmoth.com>
- * @copyright Burning Moth Creations Inc. 2016-2020
+ * @copyright Burning Moth Creations Inc. 2016-2025
  */
 namespace BurningMoth\ChromeLogger;
 
@@ -11,7 +11,7 @@ namespace BurningMoth\ChromeLogger;
  * @var string|float
  * @since 1.0
  */
-const VERSION = '2.5.1';
+const VERSION = '2.5.2';
 
 
 /**
@@ -558,7 +558,7 @@ function report( $message, $trace = array(), $type = 'info' ) {
 				// set the header if header size is within stated limits ...
 				if (
 					( $header = json_encode($json) )
-					&& ( $header = base64_encode(utf8_encode($header)) )
+					&& ( $header = base64_encode(iconv('ISO-8859-1', 'UTF-8', $header)) )
 					&& (
 						1 > namespace\variable('max_header_size')
 						|| strlen($header) <= namespace\variable('max_header_size')

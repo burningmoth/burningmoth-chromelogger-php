@@ -1,6 +1,9 @@
 # ChromeLogger CHANGELOG
 
-= 2024 Sep 27 / Version 2.7 =
+= 2025 Feb 04 / Version 2.5.2 =
+* Fixed: utf8_encode() deprecated w/PHP 8.2+, replaced with iconv().
+
+= 2024 Sep 27 / Version 2.5.1 =
 * Fixed: error_reporting() doesn't return 0 w/PHP 8+, ammended with error code bitmask to correct.
 
 = 2024 Sep 25 / Version 2.5 =
